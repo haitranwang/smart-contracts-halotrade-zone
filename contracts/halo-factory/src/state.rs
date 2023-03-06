@@ -76,6 +76,136 @@ pub fn add_allow_native_token(
 ) -> StdResult<()> {
     ALLOW_NATIVE_TOKENS.save(storage, denom.as_bytes(), &decimals)
 }
+#[cfg(test)]
+mod setting_pagination {
+    use cosmwasm_std::Uint128;
+    use haloswap::{asset::CreatePairRequirements, mock_querier::mock_dependencies};
+
+    use super::*;
+
+    #[test]
+    fn test_read_pairs() {
+        let mut deps = mock_dependencies(&[]);
+        let api = deps.api;
+        let asset_infos = [
+            AssetInfoRaw::NativeToken {
+                denom: "uaura".to_string(),
+            },
+            AssetInfoRaw::NativeToken {
+                denom: "uatom".to_string(),
+            },
+        ];
+        let pair_key1 = pair_key(&asset_infos);
+        PAIRS
+            .save(
+                deps.as_mut().storage,
+                pair_key1.as_slice(),
+                &PairInfoRaw {
+                    contract_addr: api.addr_canonicalize("pair1").unwrap(),
+                    liquidity_token: api.addr_canonicalize("lp1").unwrap(),
+                    asset_infos,
+                    asset_decimals: [6u8, 6u8],
+                    requirements: CreatePairRequirements {
+                        whitelist: vec![],
+                        first_asset_minimum: Uint128::zero(),
+                        second_asset_minimum: Uint128::zero(),
+                    },
+                },
+            )
+            .unwrap();
+
+        let asset_infos = [
+            AssetInfoRaw::NativeToken {
+                denom: "uatom".to_string(),
+            },
+            AssetInfoRaw::NativeToken {
+                denom: "uusd".to_string(),
+            },
+        ];
+
+        let pair_key2 = pair_key(&asset_infos);
+        PAIRS
+            .save(
+                deps.as_mut().storage,
+                pair_key2.as_slice(),
+                &PairInfoRaw {
+                    contract_addr: api.addr_canonicalize("pair2").unwrap(),
+                    liquidity_token: api.addr_canonicalize("lp2").unwrap(),
+                    asset_infos,
+                    asset_decimals: [6u8, 6u8],
+                    requirements: CreatePairRequirements {
+                        whitelist: vec![],
+                        first_asset_minimum: Uint128::zero(),
+                        second_asset_minimum: Uint128::zero(),
+                    },
+                },
+            )
+            .unwrap();
+
+        let asset_infos = [
+            AssetInfoRaw::NativeToken {
+                denom: "uusd".to_string(),
+            },
+            AssetInfoRaw::NativeToken {
+                denom: "uaura".to_string(),
+            },
+        ];
+        let pair_key3 = pair_key(&asset_infos);
+        PAIRS
+            .save(
+                deps.as_mut().storage,
+                pair_key3.as_slice(),
+                &PairInfoRaw {
+                    contract_addr: api.addr_canonicalize("pair3").unwrap(),
+                    liquidity_token: api.addr_canonicalize("lp3").unwrap(),
+                    asset_infos,
+                    asset_decimals: [6u8, 6u8],
+                    requirements: CreatePairRequirements {
+                        whitelist: vec![],
+                        first_asset_minimum: Uint128::zero(),
+                        second_asset_minimum: Uint128::zero(),
+                    },
+                },
+            )
+            .unwrap();
+
+        let pairs = read_pairs(deps.as_ref().storage, deps.as_ref().api, None, None).unwrap();
+        println!("PAIR: {:?}", pairs);
+        assert_eq!(pairs.len(), 3);
+
+        let pairs = read_pairs(
+            deps.as_ref().storage,
+            deps.as_ref().api,
+            Some([
+                AssetInfoRaw::NativeToken {
+                    denom: "uaura".to_string(),
+                },
+                AssetInfoRaw::NativeToken {
+                    denom: "uatom".to_string(),
+                },
+            ]),
+            None,
+        )
+        .unwrap();
+        assert_eq!(pairs.len(), 2);
+
+        let pairs = read_pairs(
+            deps.as_ref().storage,
+            deps.as_ref().api,
+            Some([
+                AssetInfoRaw::NativeToken {
+                    denom: "uaura".to_string(),
+                },
+                AssetInfoRaw::NativeToken {
+                    denom: "uatom".to_string(),
+                },
+            ]),
+            Some(1),
+        )
+        .unwrap();
+        assert_eq!(pairs.len(), 1);
+    }
+}
 
 #[cfg(test)]
 mod allow_native_token {
@@ -87,7 +217,7 @@ mod allow_native_token {
     #[test]
     fn normal() {
         let mut deps = mock_dependencies(&[]);
-        let denom = "uluna".to_string();
+        let denom = "uaura".to_string();
         let decimals = 6u8;
 
         add_allow_native_token(deps.as_mut().storage, denom.to_string(), decimals).unwrap();
@@ -103,7 +233,7 @@ mod allow_native_token {
     #[test]
     fn duplicate_register_will_append() {
         let mut deps = mock_dependencies(&[]);
-        let denom = "uluna".to_string();
+        let denom = "uaura".to_string();
 
         add_allow_native_token(deps.as_mut().storage, denom.to_string(), 6u8).unwrap();
 
