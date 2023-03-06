@@ -149,7 +149,6 @@ pub fn receive_cw20(
                     }
                 }
             }
-            
             if !authorized {
                 return Err(ContractError::Unauthorized {});
             }

@@ -1,40 +1,33 @@
 #[cfg(test)]
 pub mod env_setup {
     use cosmwasm_std::{Addr, Coin, Empty, StdError, Uint128};
-    use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
     use cw20::{Cw20Coin, MinterResponse};
-    
+    use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
+
     use halo_factory::contract::{
-        execute as HaloFactoryExecute, 
-        instantiate as HaloFactoryInstantiate, 
-        reply as HaloFactoryReply, 
-        query as HaloFactoryQuery
+        execute as HaloFactoryExecute, instantiate as HaloFactoryInstantiate,
+        query as HaloFactoryQuery,
     };
 
     use halo_pair::contract::{
-        execute as HaloPairExecute, 
-        instantiate as HaloPairInstantiate, 
-        query as HaloPairQuery
+        execute as HaloPairExecute, instantiate as HaloPairInstantiate, query as HaloPairQuery,
     };
 
     use halo_router::contract::{
-        execute as HaloRouterExecute,  
-        instantiate as HaloRouterInstantiate, 
-        query as HaloRouterQuery
+        execute as HaloRouterExecute, instantiate as HaloRouterInstantiate,
+        query as HaloRouterQuery,
     };
 
     use crate::contract::{
-        execute as HaloTokenExecute, 
-        instantiate as HaloTokenInstantiate, 
-        query as HaloTokenQuery
+        execute as HaloTokenExecute, instantiate as HaloTokenInstantiate, query as HaloTokenQuery,
     };
 
+    use halo_factory::state::read_pairs;
+    use haloswap::asset::{AssetInfo, CreatePairRequirements};
     use haloswap::factory::InstantiateMsg as HaloFactoryInstantiateMsg;
     use haloswap::pair::InstantiateMsg as HaloPairInstantiateMsg;
     use haloswap::router::InstantiateMsg as HaloRouterInstantiateMsg;
     use haloswap::token::InstantiateMsg as HaloTokenInstantiateMsg;
-    use haloswap::asset::{AssetInfo, CreatePairRequirements};
-    use halo_factory::state::read_pairs;
 
     // ****************************************
     // You MUST define the constants value here
@@ -47,7 +40,7 @@ pub mod env_setup {
 
     pub const NATIVE_DENOM_2: &str = "uaura1";
     pub const NATIVE_BALANCE_2: u128 = 500_000_000_000u128;
-    
+
     pub const HALO_TOKEN_SYMBOL: &str = "HALO";
     pub const HALO_TOKEN_NAME: &str = "Halo Token";
     pub const HALO_TOKEN_DECIMALS: u8 = 18;
@@ -80,7 +73,8 @@ pub mod env_setup {
     }
 
     fn halo_factory_contract_template() -> Box<dyn Contract<Empty>> {
-        let contract = ContractWrapper::new(HaloFactoryExecute, HaloFactoryInstantiate, HaloFactoryQuery);
+        let contract =
+            ContractWrapper::new(HaloFactoryExecute, HaloFactoryInstantiate, HaloFactoryQuery);
         Box::new(contract)
     }
 
@@ -90,10 +84,11 @@ pub mod env_setup {
     }
 
     fn halo_router_contract_template() -> Box<dyn Contract<Empty>> {
-        let contract = ContractWrapper::new(HaloRouterExecute, HaloRouterInstantiate, HaloRouterQuery);
+        let contract =
+            ContractWrapper::new(HaloRouterExecute, HaloRouterInstantiate, HaloRouterQuery);
         Box::new(contract)
     }
-    
+
     fn halo_token_contract_template() -> Box<dyn Contract<Empty>> {
         let contract = ContractWrapper::new(HaloTokenExecute, HaloTokenInstantiate, HaloTokenQuery);
         Box::new(contract)
@@ -265,13 +260,12 @@ pub mod env_setup {
             contract_code_id: halo_token_contract_code_id,
         });
 
-
         // return the app instance, the addresses and code IDs of all contracts
         (app, contract_info_vec)
     }
 
     // can not instantiate halo token with wrong validate condition (name, symbol, decimals)
-#[test]
+    #[test]
     fn cannot_instantiate_with_wrong_validate_condition() {
         let mut app = mock_app();
         let halo_token_contract_code_id = app.store_code(halo_token_contract_template());
@@ -320,7 +314,7 @@ pub mod env_setup {
             name: HALO_TOKEN_NAME.to_string(),
             symbol: HALO_TOKEN_SYMBOL.to_string(),
             decimals: HALO_TOKEN_DECIMALS,
-            initial_balances: vec![Cw20Coin{
+            initial_balances: vec![Cw20Coin {
                 address: Addr::unchecked(ADMIN).to_string(),
                 amount: Uint128::new(100),
             }],
@@ -340,10 +334,11 @@ pub mod env_setup {
                 None,
             )
             .unwrap_err();
-        
+
         assert_eq!(
             err.source().unwrap().to_string(),
-            StdError::generic_err("Name is not in the expected format (3-50 UTF-8 bytes)").to_string()
+            StdError::generic_err("Name is not in the expected format (3-50 UTF-8 bytes)")
+                .to_string()
         );
 
         let err = app
@@ -356,10 +351,11 @@ pub mod env_setup {
                 None,
             )
             .unwrap_err();
-        
+
         assert_eq!(
             err.source().unwrap().to_string(),
-            StdError::generic_err("Name is not in the expected format (3-50 UTF-8 bytes)").to_string()
+            StdError::generic_err("Name is not in the expected format (3-50 UTF-8 bytes)")
+                .to_string()
         );
 
         let err = app
@@ -375,7 +371,8 @@ pub mod env_setup {
 
         assert_eq!(
             err.source().unwrap().to_string(),
-            StdError::generic_err("Ticker symbol is not in expected format [a-zA-Z\\-]{3,12}").to_string()
+            StdError::generic_err("Ticker symbol is not in expected format [a-zA-Z\\-]{3,12}")
+                .to_string()
         );
 
         let err = app
@@ -391,7 +388,8 @@ pub mod env_setup {
 
         assert_eq!(
             err.source().unwrap().to_string(),
-            StdError::generic_err("Ticker symbol is not in expected format [a-zA-Z\\-]{3,12}").to_string()
+            StdError::generic_err("Ticker symbol is not in expected format [a-zA-Z\\-]{3,12}")
+                .to_string()
         );
 
         let err = app
@@ -425,8 +423,5 @@ pub mod env_setup {
             err.source().unwrap().to_string(),
             StdError::generic_err("Initial supply greater than cap").to_string()
         );
-
     }
 }
-
-

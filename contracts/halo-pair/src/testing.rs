@@ -1,9 +1,8 @@
 use crate::contract::{
-    assert_max_spread, execute, instantiate, query_pair_info, query_pool, reply, query_simulation, query_reverse_simulation
+    assert_max_spread, execute, instantiate, query_pair_info, query_pool, query_reverse_simulation,
+    query_simulation, reply,
 };
-// use crate::contract::{query_reverse_simulation, query_simulation};
 use crate::error::ContractError;
-use haloswap::mock_querier::mock_dependencies;
 use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{
     attr, to_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Reply, ReplyOn, Response, StdError,
@@ -11,6 +10,7 @@ use cosmwasm_std::{
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, MinterResponse};
 use haloswap::asset::{Asset, AssetInfo, CreatePairRequirements, PairInfo};
+use haloswap::mock_querier::mock_dependencies;
 use haloswap::pair::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, PoolResponse};
 use haloswap::pair::{ReverseSimulationResponse, SimulationResponse};
 use haloswap::token::InstantiateMsg as TokenInstantiateMsg;
@@ -82,10 +82,9 @@ fn proper_initialization() {
             ),
         }),
     };
-
     let _res = reply(deps.as_mut(), mock_env(), reply_msg).unwrap();
     println!("{:?}", _res);
-    
+
     // it worked, let's query the state
     let pair_info: PairInfo = query_pair_info(deps.as_ref()).unwrap();
     assert_eq!("liquidity0000", pair_info.liquidity_token.as_str());
@@ -194,8 +193,6 @@ fn proper_initialization() {
 //         })),
 //         msg_transfer,
 //     );
-
-
 // }
 
 #[test]
@@ -800,8 +797,6 @@ fn withdraw_liquidity() {
 //             })
 //             .unwrap(),
 //     });
-
-
 //     // normal swap
 //     // let msg = ExecuteMsg::Swap {
 //     //     offer_asset: Asset {
@@ -981,17 +976,17 @@ fn try_token_to_native() {
     };
 
     let _res = reply(deps.as_mut(), mock_env(), reply_msg).unwrap();
-    
+
     // unauthorized access; can not execute swap directly for token swap
-  let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::zero(),
-        msg:to_binary(&Cw20HookMsg::Swap {
-                belief_price: None,
-                max_spread: None,
-                to: None,
-            })
-            .unwrap(),
+        msg: to_binary(&Cw20HookMsg::Swap {
+            belief_price: None,
+            max_spread: None,
+            to: None,
+        })
+        .unwrap(),
     });
     // let msg = ExecuteMsg::Swap {
     //     offer_asset: Asset {
