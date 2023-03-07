@@ -1,12 +1,14 @@
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{coins, from_binary, to_binary, Addr, DepsMut, Response, OwnedDeps, MemoryStorage, testing::{MockApi, MockQuerier, mock_dependencies, mock_info, mock_env}, WasmQuery, Uint128, ContractResult};
-
-    use cw20_base::{ContractError, msg::QueryMsg, msg::ExecuteMsg};
-    
-    use crate::env_setup::env_setup::{instantiate_contracts, ADMIN, USER_1};
     use crate::contract::*;
-    use cw20::{Expiration as Cw20Expiration, TokenInfoResponse, Cw20Coin, MinterResponse};
+    use crate::env_setup::env_setup::{instantiate_contracts, ADMIN, USER_1};
+    use cosmwasm_std::{
+        coins, from_binary,
+        testing::{mock_dependencies, mock_env, mock_info, MockApi, MockQuerier},
+        to_binary, ContractResult, DepsMut, MemoryStorage, OwnedDeps, Response, Uint128, WasmQuery,
+    };
+    use cw20::{Expiration as Cw20Expiration, MinterResponse, TokenInfoResponse};
+    use cw20_base::{msg::ExecuteMsg, msg::QueryMsg, ContractError};
     use haloswap::token::InstantiateMsg;
 
     const MOCK_HALO_FACTORY_ADDR: &str = "halo_factory_addr";
@@ -18,8 +20,6 @@ mod tests {
     const MOCK_OFFER_CW20_AMOUNT: u128 = 1000000000;
     const MOCK_OFFER_CW20_AMOUNT_MINIMUM: u128 = 1;
     const MOCK_OFFER_CW20_PRICE: u128 = 10000000;
-
-
     const MOCK_OFFER_NFT_OFFERER_INSUFFICIENT_BALANCE: &str = "offerer 2";
     const MOCK_OFFER_NFT_OFFERER_INSUFFICIENT_ALLOWANCE: &str = "offerer 3";
 
@@ -138,7 +138,6 @@ mod tests {
         assert!(res.is_ok());
     }
 
-
     mod execute_contract {
         use super::*;
         // Checking Minting works
@@ -159,16 +158,10 @@ mod tests {
         #[test]
         fn proper_execute_mint() {
             let mut deps = mock_deps();
-            let response = create_mint_msg(
-                deps.as_mut(), 
-                ADMIN, 
-                USER_1,
-                Uint128::from(10u128));
-            
+            let response = create_mint_msg(deps.as_mut(), ADMIN, USER_1, Uint128::from(10u128));
+
             println!("Response: {:?}", &response);
             assert!(response.is_ok());
-
         }
     }
-
 }
